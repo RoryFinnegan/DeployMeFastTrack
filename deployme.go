@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/xuri/excelize/v2"
@@ -27,6 +27,33 @@ func findStart(f *excelize.File) int {
 
 }
 
+func readScan() string {
+	var input []byte
+	buffer := make([]byte, 1)
+
+	for {
+		_, err := os.Stdin.Read(buffer)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			break
+		}
+
+		// Check if the user pressed the Tab key
+		if buffer[0] == '\t' {
+			return strings.TrimSpace(string(input))
+		}
+
+		// Append the character to the input slice
+		input = append(input, buffer[0])
+
+		// Check if the user pressed Enter (newline)
+		if buffer[0] == '\n' {
+			return strings.TrimSpace(string(input))
+		}
+	}
+	return strings.TrimSpace(string(input))
+}
+
 func main() {
 
 	var f *excelize.File
@@ -47,32 +74,45 @@ func main() {
 	}
 
 	count := findStart(f)
-	scanner := bufio.NewScanner(os.Stdin)
+	// scanner := bufio.NewScanner(os.Stdin)
 	var asset, serial, user string
 	for {
+		asset = ""
+		serial = ""
+		user = ""
 
 		fmt.Println("Enter Asset Tag: ")
-		if scanner.Scan() {
-			asset = scanner.Text()
-		}
-		if err := scanner.Err(); err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading input:", err)
+		// if scanner.Scan() {
+		// 	asset = scanner.Text()
+		// }
+		// if err := scanner.Err(); err != nil {
+		// 	fmt.Fprintln(os.Stderr, "Error reading input:", err)
+		// }
+		for asset == "" {
+			asset = readScan()
 		}
 
 		fmt.Println("Enter Serial Number: ")
-		if scanner.Scan() {
-			serial = scanner.Text()
-		}
-		if err := scanner.Err(); err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading input:", err)
+		// if scanner.Scan() {
+		// 	serial = scanner.Text()
+		// }
+		// if err := scanner.Err(); err != nil {
+		// 	fmt.Fprintln(os.Stderr, "Error reading input:", err)
+		// }
+		for serial == "" {
+			serial = readScan()
 		}
 
 		fmt.Println("Enter Name: ")
-		if scanner.Scan() {
-			user = scanner.Text()
-		}
-		if err := scanner.Err(); err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading input:", err)
+		// if scanner.Scan() {
+		// 	user = scanner.Text()
+		// }
+		// if err := scanner.Err(); err != nil {
+		// 	fmt.Fprintln(os.Stderr, "Error reading input:", err)
+		// }
+
+		for user == "" {
+			user = readScan()
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", count), asset)
