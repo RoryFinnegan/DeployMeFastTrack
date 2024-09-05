@@ -1,6 +1,7 @@
 package main
 
 import (
+	dbmanager "DeployMeFastTrack/managers"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -117,7 +118,8 @@ func init_spreadsheet() *excelize.File {
 
 func init_userlist() error {
 
-	if _, err := os.Stat("userlist.json"); err == nil {
+	_, err := os.Stat("userlist.json")
+	if err == nil {
 		return nil
 	}
 
@@ -131,9 +133,15 @@ func init_userlist() error {
 		{ID: "1", Name: "TestAccount"},
 	}
 
-	encoder := json.NewEncoder(file)
-	err = encoder.Encode(users)
+	data, err := json.MarshalIndent(users, "", "  ")
 	if err != nil {
+		fmt.Println("Could not indent JSON")
+		return err
+	}
+
+	err = os.WriteFile("userlist.json", data, 0644)
+	if err != nil {
+		fmt.Println("Could not write userlist.json")
 		return err
 	}
 
@@ -176,6 +184,7 @@ func main() {
 
 	spreadsheet := init_spreadsheet()
 	init_userlist()
+	dbmanager.InitDatabase()
 
 	count := findStart(spreadsheet)
 	// scanner := bufio.NewScanner(os.Stdin)
