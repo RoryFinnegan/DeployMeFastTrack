@@ -154,6 +154,7 @@ func main() {
 	spreadsheet := init_spreadsheet()
 	init_userlist()
 	manager.InitDatabase()
+	manager.DBGetConfig()
 
 	count := findStart(spreadsheet)
 	var asset, serial, user string
@@ -178,6 +179,9 @@ func main() {
 		}
 		user = get_name_from_id(user)
 
+		if manager.DBConfig.Driver != "None" {
+			manager.InsertDatabaseRow(asset, serial, user)
+		}
 		manager.UpdateSpreadsheet(spreadsheet, count, asset, serial, user)
 		count++
 	}
