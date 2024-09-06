@@ -1,13 +1,13 @@
 package main
 
 import (
-	dbmanager "DeployMeFastTrack/managers"
+	manager "DeployMeFastTrack/managers"
+
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -35,9 +35,11 @@ func findStart(f *excelize.File) int {
 }
 
 func readScan() string {
+	//Create a buffer and a array to hold all values
 	var input []byte
 	buffer := make([]byte, 1)
 
+	//Read until end of file is reached
 	for {
 		_, err := os.Stdin.Read(buffer)
 		if err != nil {
@@ -45,54 +47,19 @@ func readScan() string {
 			break
 		}
 
+		//Leave after a tab
 		if buffer[0] == '\t' {
 			return strings.TrimSpace(string(input))
 		}
 
 		input = append(input, buffer[0])
 
+		//Leave after a newline
 		if buffer[0] == '\n' {
 			return strings.TrimSpace(string(input))
 		}
 	}
 	return strings.TrimSpace(string(input))
-
-	// prev_state, err := term.MakeRaw(int(os.Stdin.Fd()))
-	// if err != nil {
-	// 	fmt.Println("Terminal could not enter raw mode. Error:\n", err)
-	// }
-
-	// defer term.Restore(int(os.Stdin.Fd()), prev_state)
-
-	// sigChan := make(chan os.Signal, 1)
-	// signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	// go func() {
-	// 	sig := <-sigChan
-	// 	fmt.Printf("Received signal: %v. Restoring terminal and exiting.\n", sig)
-	// 	term.Restore(int(os.Stdin.Fd()), prev_state)
-	// 	os.Exit(0)
-	// }()
-
-	// for {
-	// 	_, err = os.Stdin.Read(buffer)
-	// 	if err != nil {
-	// 		fmt.Println("Could not read buffer: \n", err)
-	// 	}
-
-	// 	fmt.Printf("%q", buffer[0])
-
-	// 	if buffer[0] == '\n' || buffer[0] == '\t' || buffer[0] == '\r' {
-	// 		os.Stdout.Write([]byte("\n"))
-	// 		return string(input)
-	// 	}
-
-	// 	if buffer[0] == '\x03' {
-	// 		term.Restore(int(os.Stdin.Fd()), prev_state)
-	// 		os.Exit(0)
-	// 	}
-
-	// 	input = append(input, buffer[0])
-	// }
 
 }
 
@@ -100,9 +67,11 @@ func init_spreadsheet() *excelize.File {
 	var spreadsheet *excelize.File
 	spreadsheet, err := excelize.OpenFile("deploymebook.xlsx")
 	if err != nil {
+		//If a book does not exist create one
 		fmt.Println("Book not found... making one now!")
 		spreadsheet = excelize.NewFile()
 
+		//TODO: Change program to allow customizable columns. Large task.
 		err := spreadsheet.SetColWidth("Sheet1", "A", "D", 50)
 		if err != nil {
 			fmt.Println("Could not make columns wide :(")
@@ -184,10 +153,9 @@ func main() {
 
 	spreadsheet := init_spreadsheet()
 	init_userlist()
-	dbmanager.InitDatabase()
+	manager.InitDatabase()
 
 	count := findStart(spreadsheet)
-	// scanner := bufio.NewScanner(os.Stdin)
 	var asset, serial, user string
 	for {
 		asset = ""
@@ -195,48 +163,22 @@ func main() {
 		user = ""
 
 		fmt.Println("Enter Asset Tag: ")
-		// if scanner.Scan() {
-		// 	asset = scanner.Text()
-		// }
-		// if err := scanner.Err(); err != nil {
-		// 	fmt.Fprintln(os.Stderr, "Error reading input:", err)
-		// }
 		for asset == "" {
 			asset = readScan()
 		}
 
 		fmt.Println("Enter Serial Number: ")
-		// if scanner.Scan() {
-		// 	serial = scanner.Text()
-		// }
-		// if err := scanner.Err(); err != nil {
-		// 	fmt.Fprintln(os.Stderr, "Error reading input:", err)
-		// }
 		for serial == "" {
 			serial = readScan()
 		}
 
 		fmt.Println("Enter Name: ")
-		// if scanner.Scan() {
-		// 	user = scanner.Text()
-		// }
-		// if err := scanner.Err(); err != nil {
-		// 	fmt.Fprintln(os.Stderr, "Error reading input:", err)
-		// }
-
 		for user == "" {
 			user = readScan()
 		}
 		user = get_name_from_id(user)
 
-		spreadsheet.SetCellValue("Sheet1", fmt.Sprintf("A%d", count), asset)
-		spreadsheet.SetCellValue("Sheet1", fmt.Sprintf("B%d", count), serial)
-		spreadsheet.SetCellValue("Sheet1", fmt.Sprintf("C%d", count), user)
-		spreadsheet.SetCellValue("Sheet1", fmt.Sprintf("D%d", count), time.Now())
-
-		if err := spreadsheet.SaveAs("deploymebook.xlsx"); err != nil {
-			fmt.Println(err)
-		}
+		manager.UpdateSpreadsheet(spreadsheet, count, asset, serial, user)
 		count++
 	}
 

@@ -1,4 +1,4 @@
-package dbmanager
+package manager
 
 import (
 	"encoding/json"
@@ -11,6 +11,7 @@ type Config struct {
 }
 
 type DatabaseConfig struct {
+	Driver   string `json:"Driver"`
 	Port     int    `json:"port"`
 	Host     string `json:"host"`
 	User     string `json:"user"`
@@ -27,6 +28,7 @@ func InitDatabase() error {
 
 	config := Config{
 		Database: DatabaseConfig{
+			Driver:   "None",
 			Port:     8080,
 			Host:     "localhost",
 			User:     "root",
@@ -46,5 +48,10 @@ func InitDatabase() error {
 		fmt.Println("Could not write config.json")
 		return err
 	}
+
 	return nil
+}
+
+func Insert(asset string, serial string, name string) {
+
 }
