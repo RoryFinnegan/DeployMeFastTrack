@@ -43,6 +43,7 @@ func main() {
 	spreadsheet := manager.InitSpreadsheet()
 	manager.InitUserlist()
 	manager.InitDatabase()
+	manager.MailGetConfig()
 	manager.DBGetConfig()
 
 	//Find the start of the spreadsheet to start inserting new values
@@ -73,6 +74,11 @@ func main() {
 		if manager.DBConfig.Driver != "None" {
 			manager.InsertDatabaseRow(asset, serial, user)
 		}
+
+		if manager.Mail.Sender != "sender@example.com" {
+			manager.SendMail(asset, serial, user)
+		}
+
 		manager.UpdateSpreadsheet(spreadsheet, count, asset, serial, user)
 		count++
 	}
