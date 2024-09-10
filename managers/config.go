@@ -86,8 +86,9 @@ func InitDatabase() error {
 	return nil
 }
 
+// Initialize the userlist with a default user and some
+// basic formatting
 func InitUserlist() error {
-
 	_, err := os.Stat("userlist.json")
 	if err == nil {
 		return nil
