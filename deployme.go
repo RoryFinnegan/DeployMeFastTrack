@@ -17,7 +17,7 @@ func readScan() string {
 	for {
 		_, err := os.Stdin.Read(buffer)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Println("Could not read buffer")
 			break
 		}
 
@@ -46,8 +46,6 @@ func main() {
 	manager.MailGetConfig()
 	manager.DBGetConfig()
 
-	//Find the start of the spreadsheet to start inserting new values
-	count := manager.FindStart(spreadsheet)
 	var asset, serial, user string
 	for {
 		//Reset the asset, serial and user
@@ -72,15 +70,15 @@ func main() {
 		user = manager.GetNameFromId(user)
 
 		if manager.DBConfig.Driver != "None" {
-			manager.InsertDatabaseRow(asset, serial, user)
+			go manager.InsertDatabaseRow(asset, serial, user)
 		}
 
 		if manager.Mail.Sender != "sender@example.com" {
-			manager.SendMail(asset, serial, user)
+			go manager.SendMail(asset, serial, user)
 		}
 
-		manager.UpdateSpreadsheet(spreadsheet, count, asset, serial, user)
-		count++
+		go manager.UpdateSpreadsheet(spreadsheet, asset, serial, user)
+
 	}
 
 }

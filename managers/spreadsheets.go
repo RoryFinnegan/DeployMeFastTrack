@@ -1,13 +1,3 @@
-package manager
-
-import (
-	"fmt"
-	"log"
-	"time"
-
-	"github.com/xuri/excelize/v2"
-)
-
 // Excelize Library Licensing Clause
 
 /*
@@ -43,6 +33,19 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+package manager
+
+import (
+	"fmt"
+	"log"
+	"sync"
+	"time"
+
+	"github.com/xuri/excelize/v2"
+)
+
+var ssMutex sync.Mutex
+
 // Create and return a spreadsheet
 func InitSpreadsheet() *excelize.File {
 	var spreadsheet *excelize.File
@@ -72,7 +75,12 @@ func InitSpreadsheet() *excelize.File {
 // asset: The asset tag to add
 // serial: The serial/product number to add
 // user: The technician to add
-func UpdateSpreadsheet(spreadsheet *excelize.File, count int, asset string, serial string, user string) {
+func UpdateSpreadsheet(spreadsheet *excelize.File, asset string, serial string, user string) {
+	ssMutex.Lock()
+	defer ssMutex.Unlock()
+
+	count := findStart(spreadsheet)
+
 	spreadsheet.SetCellValue("Sheet1", fmt.Sprintf("A%d", count), asset)
 	spreadsheet.SetCellValue("Sheet1", fmt.Sprintf("B%d", count), serial)
 	spreadsheet.SetCellValue("Sheet1", fmt.Sprintf("C%d", count), user)
@@ -85,7 +93,7 @@ func UpdateSpreadsheet(spreadsheet *excelize.File, count int, asset string, seri
 
 }
 
-func FindStart(f *excelize.File) int {
+func findStart(f *excelize.File) int {
 	for row := 1; ; row++ {
 		// Get the value from column A for the current row
 		cell, err := f.GetCellValue("Sheet1", fmt.Sprintf("A%d", row))

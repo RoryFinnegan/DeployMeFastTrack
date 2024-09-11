@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/go-sql-driver/mysql"
 )
 
 // Global variable to hold database configuration
 var DBConfig DatabaseConfig
+
+var dbMutex sync.Mutex
 
 // Convert config information regarding the database into a struct
 // then transfer information into global variable DBConfig
@@ -72,6 +75,9 @@ func dbConnect() (*sql.DB, error) {
 // name string: The hash or name of the employee registering the product
 // All above are stored in the form of VARCHAR(255)
 func InsertDatabaseRow(asset string, serial string, name string) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	//Receive a connection to the DB
 	db, err := dbConnect()
 	if err != nil {
