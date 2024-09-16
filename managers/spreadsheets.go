@@ -36,21 +36,51 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package manager
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/xuri/excelize/v2"
 )
 
+var Spreadsheet SpreadsheetConfig
+
 var ssMutex sync.Mutex
+
+func spreadsheetGetConfig() error {
+	file, err := os.Open("config.json")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	//Decode the json file into a GoLang struct
+	decoder := json.NewDecoder(file)
+	config := Config{}
+	err = decoder.Decode(&config)
+	if err != nil {
+		return err
+	}
+
+	Spreadsheet = config.Spreadsheet
+
+	return nil
+}
 
 // Create and return a spreadsheet
 func InitSpreadsheet() *excelize.File {
 	var spreadsheet *excelize.File
+
+	err := spreadsheetGetConfig()
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	//Check if a spreadsheet already exists
-	spreadsheet, err := excelize.OpenFile("deploymebook.xlsx")
+	spreadsheet, err = excelize.OpenFile(Spreadsheet.Path)
 	//If a spreadsheet doesn't exist, make one
 	if err != nil {
 		fmt.Println("Book not found... making one now!")
@@ -87,7 +117,7 @@ func UpdateSpreadsheet(spreadsheet *excelize.File, asset string, serial string, 
 	//Take the current time and add to the fourth column
 	spreadsheet.SetCellValue("Sheet1", fmt.Sprintf("D%d", count), time.Now())
 
-	if err := spreadsheet.SaveAs("deploymebook.xlsx"); err != nil {
+	if err := spreadsheet.SaveAs(Spreadsheet.Path); err != nil {
 		fmt.Println(err)
 	}
 

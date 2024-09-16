@@ -14,8 +14,9 @@ type User struct {
 // Struct used to hold the top layer of all data
 // taken from config.json
 type Config struct {
-	Database DatabaseConfig `json:"database"`
-	Mail     MailConfig     `json:"mail"`
+	Database    DatabaseConfig    `json:"database"`
+	Mail        MailConfig        `json:"mail"`
+	Spreadsheet SpreadsheetConfig `json:"spreadsheet"`
 }
 
 // Holds the settings for connecting to a database
@@ -42,8 +43,12 @@ type MailConfig struct {
 	Port     string `json:"Port"`
 }
 
+type SpreadsheetConfig struct {
+	Path string `json:"Path"`
+}
+
 // Create default database information for the config
-func InitDatabase() error {
+func InitConfig() error {
 	//If the config exists already, leave
 	_, err := os.Stat("config.json")
 	if err == nil {
@@ -66,6 +71,9 @@ func InitDatabase() error {
 			Receiver: "receiver@example.com",
 			Server:   "mail.example.com",
 			Port:     "25",
+		},
+		Spreadsheet: SpreadsheetConfig{
+			Path: "deploymebook.xlsx",
 		},
 	}
 

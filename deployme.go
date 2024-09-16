@@ -40,9 +40,9 @@ func readScan() string {
 // Program Start
 func main() {
 	//Initialize all the setup data
+	manager.InitConfig()
 	spreadsheet := manager.InitSpreadsheet()
 	manager.InitUserlist()
-	manager.InitDatabase()
 	manager.MailGetConfig()
 	manager.DBGetConfig()
 
