@@ -46,6 +46,18 @@ func main() {
 	manager.MailGetConfig()
 	manager.DBGetConfig()
 
+	if manager.DBConfig.Driver != "" && manager.DBConfig.Password == "" {
+		fmt.Println("Enter database password:")
+		fmt.Scanln(&manager.DBConfig.Password)
+	}
+
+	if manager.Mail.Password == "" && manager.Mail.Sender != "sender@example.com" {
+		fmt.Println("Enter mail password:")
+		fmt.Scanln(&manager.Mail.Password)
+	}
+
+	fmt.Println("THE PASSWORDS, ", manager.DBConfig.Password, manager.Mail.Password)
+
 	var asset, serial, user string
 	for {
 		//Reset the asset, serial and user

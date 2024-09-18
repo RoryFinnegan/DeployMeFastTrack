@@ -14,11 +14,11 @@ both: windows linux
 
 # Compile for Windows
 windows:
-	GOOS=$(GOOS_WINDOWS) GOARCH=$(GOARCH) go build -o bin/$(BINARY)-windows.exe $(GOFILES)
+	GOOS=$(GOOS_WINDOWS) GOARCH=$(GOARCH) go build -o bin/$(BINARY)-windows-$(GOARCH).exe $(GOFILES)
 
 # Compile for Linux
 linux:
-	GOOS=$(GOOS_LINUX) GOARCH=$(GOARCH) go build -o bin/$(BINARY)-linux $(GOFILES)
+	GOOS=$(GOOS_LINUX) GOARCH=$(GOARCH) go build -o bin/$(BINARY)-linux-$(GOARCH) $(GOFILES)
 
 # Clean up compiled binaries
 clean:
